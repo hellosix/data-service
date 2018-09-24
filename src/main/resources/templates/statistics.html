@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="../../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../../css/common.css" rel="stylesheet" charset="utf-8" />
+    <style>
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index"><span class="glyphicon glyphicon-home"></span> Home</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li><a href="/sql/addSql">add sql</a></li>
+                    <li><a href="/list">list</a></li>
+                    <li class="active"><a href="/statistics">statistics</a></li>
+                    <li><a href="/history">history</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </div>
+</nav>
+<div class="clearfix nav-height"></div>
+<div class="container-fluid container-title">
+    <div class="container container-title-content">
+        <h1>Statistic</h1>
+        <p>接口统计模块， 统计接口的调用次数，不同时间段的使用率，及api运行时间,这样有利于我们分析API性能。</p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Job list</h3>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <canvas id="canvas"></canvas>
+                    </div>
+                    <div class="col-md-8">
+                        <canvas id="bar-canvas"></canvas>
+                    </div>
+                </div>
+            </div><!-- .panel-body -->
+        </div><!-- .panel -->
+    </div><!-- .row -->
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Job list</h3>
+            </div>
+            <div class="panel-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>#id</th>
+                        <th>count</th>
+                        <th>sum</th>
+                        <th>min</th>
+                        <th>max</th>
+                        <th>avg</th>
+                        <th>client_sql</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${statList}">
+                        <td th:text="${item.sql_id}">id</td>
+                        <td th:text="${item.num}">type</td>
+                        <td th:text="${item.sum}">type</td>
+                        <td th:text="${item.min}">type</td>
+                        <td th:text="${item.max}">type</td>
+                        <td th:text="${item.avg}">type</td>
+                        <td th:text="${item.client_sql}">type</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div><!-- .panel-body -->
+        </div><!-- .panel -->
+    </div><!-- .row -->
+</div><!-- .container -->
+</body>
+<script src="../../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../vender/chart/Chart.bundle.js"></script>
+<script src="../vender/chart/utils.js"></script>
+<script th:inline="JavaScript">
+    /*<![CDATA[*/
+    var reqCountList = /*[[${reqCountList}]]*/;
+    var pie_data = [];
+    var pie_labels = [];
+    var color_list = [
+        'rgb(255, 99, 132)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(54, 162, 235)',
+        'rgb(153, 102, 255)',
+        'rgb(231,233,237)'
+    ];
+    var back_color = [];
+    for( var i in reqCountList ){
+        pie_data.push( reqCountList[i].num );
+        pie_labels.push( reqCountList[i].sql_id );
+        back_color.push( color_list[i] );
+    }
+    var chartData = {
+        datasets: [{
+            data: pie_data,
+            backgroundColor: back_color,
+            label: 'My dataset' // for legend
+        }],
+        labels: pie_labels
+    };
+    var config = {
+        type: 'pie',
+        data: chartData,
+        options: {
+            responsive: true
+        }
+    };
+    var ctx = document.getElementById("canvas").getContext("2d");
+    window.myLine = new Chart(ctx, config);
+
+    var dateGroupList = /*[[${dateGroupList}]]*/;
+    var bar_data = [];
+    var bar_labels = [];
+    var bar_color = [];
+    for( var i in dateGroupList ){
+        bar_data.push( dateGroupList[i].num );
+        bar_labels.push( dateGroupList[i].date );
+        bar_color.push( color_list[i] );
+    }
+    var bar_config = {
+        type: 'bar',
+        data: {
+            labels: bar_labels,
+            datasets: [{
+                label: "count",
+                backgroundColor: window.chartColors.red,
+                borderColor: window.chartColors.red,
+                data: bar_data,
+                fill: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            title:{
+                display:false,
+                text:'Chart.js Line Chart'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'metric'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }]
+            }
+        }
+    };
+
+    var ctx = document.getElementById("bar-canvas").getContext("2d");
+    window.myLine = new Chart(ctx, bar_config);
+
+    window.chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(231,233,237)'
+    };
+
+
+    /*]]>*/
+</script>
+</html>

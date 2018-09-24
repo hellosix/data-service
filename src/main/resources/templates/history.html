@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="../../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../../vender/datatables/dataTables.bootstrap.css" rel="stylesheet" charset="utf-8" />
+    <link href="../../css/common.css" rel="stylesheet" charset="utf-8" />
+    <style>
+
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index"><span class="glyphicon glyphicon-home"></span> Home</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li><a href="/sql/addSql">add sql</a></li>
+                    <li><a href="/list">list</a></li>
+                    <li><a href="/statistics">statistics</a></li>
+                    <li class="active"><a href="/history">history</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </div>
+</nav>
+<div class="clearfix nav-height"></div>
+<div class="container-fluid container-title">
+    <div class="container container-title-content">
+        <h1>History</h1>
+        <p>可以查看 api 的运行历史及运行情况。</p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">Job run history</h3>
+            </div>
+            <div class="panel-body">
+                <table id="mytable" class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>sql_id</th>
+                        <th>run_sql</th>
+                        <th>client_ip</th>
+                        <th>client_type</th>
+                        <th>start_time</th>
+                        <th>end_time</th>
+                        <th>run_time</th>
+                        <th>detail</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="item : ${hisotryList}">
+                        <td th:text="${item.id}">id</td>
+                        <td th:text="${item.sql_id}">type</td>
+                        <td th:text="${item.run_sql}">type</td>
+                        <td th:text="${item.client_ip}">type</td>
+                        <td th:text="${item.client_type}">type</td>
+                        <td th:text="${#dates.format(item.start_time, 'yyyy-MM-dd HH:mm')}">type</td>
+                        <td th:text="${#dates.format(item.end_time, 'yyyy-MM-dd HH:mm')}">type</td>
+                        <td th:text="${item.run_time}">type</td>
+                        <td><button type="button" class="btn btn-success btn-xs">detail</button></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div><!-- .panel-body -->
+        </div><!-- .panel -->
+    </div><!-- .row -->
+</div><!-- .container -->
+</body>
+<script src="../../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../../vender/datatables/jquery.dataTables.js"></script>
+<script src="../../vender/datatables/dataTables.bootstrap.js"></script>
+<script>
+    $("#mytable").dataTable({
+        "aaSorting": [
+            [ 0, "desc" ]
+        ]
+    } );
+</script>
+</html>

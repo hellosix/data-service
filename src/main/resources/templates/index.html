@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <link href="../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../css/common.css" rel="stylesheet" charset="utf-8" />
+    <style>
+        a:link{text-decoration:none;}
+        a:visited{text-decoration:none;}
+        a:active{text-decoration:none;}
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand active" href="/index"><span class="glyphicon glyphicon-home"></span> Home</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li><a href="/sql/addSql">add sql</a></li>
+                    <li><a href="/list">list</a></li>
+                    <li><a href="/statistics">statistics</a></li>
+                    <li><a href="/history">history</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </div>
+</nav>
+<div class="clearfix nav-height"></div>
+<div class="container-fluid container-title">
+    <div class="container container-title-content">
+        <h1>Data Service</h1>
+        <p>数据层服务平台，可以将 sql 查询转换为 restful 接口，支持不同数据源的关联查询如：hive mysql...</p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-6 col-md-4">
+            <a href="/sql/addSql">
+                <div class="thumbnail">
+                    <div class="thumbnail-title">add sql</div>
+                    <div class="caption">
+                        <h3>Add sql</h3>
+                        <p>将 sql 调用转换成 restful 接口的调用，这样方便分析统计 sql 的执行效率，简化service的开发</p>
+                    </div>
+                </div>
+            </a>
+        </div><!-- .col-md-4 -->
+        <div class="col-sm-6 col-md-4">
+            <a href="/list">
+                <div class="thumbnail">
+                    <div class="thumbnail-title">list</div>
+                    <div class="caption">
+                        <h3>List</h3>
+                        <p>可以查看添加的接口记录</p>
+                    </div>
+                </div>
+            </a>
+        </div><!-- .col-md-4 -->
+        <div class="col-sm-6 col-md-4">
+            <a href="/statistics">
+                <div class="thumbnail">
+                    <div class="thumbnail-title">statistics</div>
+                    <div class="caption">
+                        <h3>Statistics</h3>
+                        <p>统计接口的调用次数，响应速度方便其它我们进行分析。</p>
+                    </div>
+                </div>
+            </a>
+        </div><!-- .col-md-4 -->
+    </div><!-- .row -->
+    <div class="row">
+        <div class="col-sm-6 col-md-4">
+            <a href="/history">
+                <div class="thumbnail">
+                    <div class="thumbnail-title">history</div>
+                    <div class="caption">
+                        <h3>History</h3>
+                        <p>查看接口调用历史</p>
+                    </div>
+                </div>
+            </a>
+        </div><!-- .col-md-4 -->
+    </div><!-- .row -->
+</div><!-- .container -->
+</body>
+<script src="../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+</html>

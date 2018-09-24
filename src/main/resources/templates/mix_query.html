@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <link href="../../vender/jquery-highlighttextarea/jquery.highlighttextarea.css" rel="stylesheet" />
+    <link href="../../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../../css/common.css" rel="stylesheet" charset="utf-8" />
+</head>
+<style>
+    .sql_param_key_div{
+        width:20%;
+        float:left;
+    }
+    .param_black_div{
+        width:2%;
+        height: 2px;
+        float: left;
+        text-align: center;
+        padding-top: 5px;
+        color:#aa9c99;
+    }
+    .input-width{
+        width: 90%;
+    }
+    .right-button{
+        width: 8%;
+        float: left;
+    }
+    .sql-textarea{
+        background: none;
+        font-size:18px;
+        height:100px
+    }
+    .left-label{
+        width: 4%;
+        float: left;
+        margin-top: 5px
+    }
+    a.btn-xs{
+        margin-top:5px;
+        border-radius: 50px;
+    }
+
+    .top-dashed-border{
+        border-top: 1px dashed #ccc;
+    }
+    .sql-button{
+        margin-right: 15px;
+        width: 70px;
+    }
+</style>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index"><span class="glyphicon glyphicon-home"></span> Home</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li><a href="/sql/addSql">add sql</a></li>
+                    <li class="active"><a href="/sql/mixQuery">mix query</a></li>
+                    <li><a href="/list">list</a></li>
+                    <li><a href="/statistics">statistics</a></li>
+                    <li><a href="/history">history</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </div>
+</nav>
+<div class="clearfix nav-height"></div>
+<div class="container-fluid container-title">
+    <div class="container container-title-content">
+        <h1>Mix query</h1>
+        <p>混合查询：可以同时查询任意有jdbc接口的数据源，比如 hive、mysql 可以直接相互关联查询，不需要导入到某一方的数据库。</p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">mix query</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group" id="add-schema-div">
+                    <label>schemas</label>
+                    <div class="form-group param-item schema-form">
+                        <div class="form-group">
+                            <div class="form-group" style="width: 39%; float: left">
+                                <input type="text" name="host" class="form-control" placeholder="host" />
+                            </div>
+                            <div class="param_black_div"></div>
+                            <div class="form-group" style="width: 15%; float: left">
+                                <input type="text" name="username" class="form-control" placeholder="username" />
+                            </div>
+                            <div class="param_black_div"></div>
+                            <div class="form-group" style="width: 15%; float: left">
+                                <input type="password" name="password" class="form-control" placeholder="password" />
+                            </div>
+                            <div class="param_black_div"></div>
+                            <div class="form-group" style="width: 15%; float: left">
+                                <input type="text" name="schema" class="form-control" placeholder="schema" />
+                            </div>
+                            <div class="param_black_div"></div>
+                            <div class="form-group right-button">
+                                <a class="btn btn-default btn-xs" href="#">test</a>
+                            </div>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="form-group">
+                            <div class="form-group pull-left" style="width:90%">
+                                <textarea class="sql-textarea form-control">select * from table user limit 1</textarea>
+                            </div>
+                            <div class="param_black_div"></div>
+                            <div class="form-group right-button">
+                                <a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- .form-group -->
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-xs" id="add-schema"> + add schema </button>
+                </div><!-- #add_param -->
+                <div class="clearfix"></div>
+                <div class="form-group top-dashed-border" id="join-param-div">
+                    <label>链接参数</label>
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-xs" id="join-param"> + join</button>
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group top-dashed-border" id="condition">
+                    <label>聚合参数</label>
+                </div><!-- #add_param -->
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-xs simple-condition" data-type="where"> + where</button>
+                    <button type="button" class="btn btn-default btn-xs" id="group-by-condition"> + group by</button>
+                    <button type="button" class="btn btn-default btn-xs simple-condition" data-type="order"> + order by </button>
+                    <button type="button" class="btn btn-default btn-xs simple-condition" data-type="limit"> + limit </button>
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group top-dashed-border">
+                    <label>保存操作</label>
+                </div><!-- #add_param -->
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-xs sql-param"> + insert into</button>
+                    <button type="button" class="btn btn-default btn-xs sql-param"> + insert overwrite</button>
+                </div>
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default sql-button"> 预览 </button>
+                    <button type="submit" class="btn btn-primary sql-button" id="sql-run"> 运行 </button>
+                </div>
+            </div>
+        </div><!-- .panel -->
+    </div><!-- .row -->
+</div><!-- .container -->
+
+<script src="../../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../../vender/jquery-highlighttextarea/jquery.highlighttextarea.js"></script>
+<script>
+    /*<![CDATA[*/
+    var schema_tpl='<div class="form-group param-item schema-form">' +
+            '<div class="form-group">' +
+            '<div class="form-group" style="width: 39%; float: left">' +
+            '<input type="text" name="host" class="form-control" placeholder="host" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group" style="width: 15%; float: left">' +
+            '<input type="text" name="username" class="form-control" placeholder="username" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group" style="width: 15%; float: left">' +
+            '<input type="password" name="password" class="form-control" placeholder="password" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group" style="width: 15%; float: left">' +
+            '<input type="text" name="schema" class="form-control" placeholder="schema" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group right-button">' +
+            '<a class="btn btn-default btn-xs" href="#">test</a>' +
+            '</div>' +
+            '</div>' +
+            '<div class="clearfix"></div>' +
+            '<div class="form-group">' +
+            '<div class="form-group pull-left" style="width:90%">' +
+            '<textarea class="sql-textarea form-control"></textarea>' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group right-button">' +
+            '<a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
+
+    var join_tpl='<div class="clearfix"></div>' +
+            '<div class="form-group param-item join-form">' +
+            '<div class="form-group left-label">' +
+            '<label>ON:</label>' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group pull-left" style="width: 36%;">' +
+            '<input type="text" name="left_column" class="form-control" placeholder="left column" />' +
+            '</div>' +
+            '<div class="param_black_div"> <label> = </label></div>' +
+            '<div class="form-group pull-left" style="width: 36%;">' +
+            '<input type="text" name="right_column" class="form-control" placeholder="right column" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group pull-left" style="width: 8%;">' +
+            '<select class="form-control join">' +
+            '<option value="left">left join</option>' +
+            '<option value="right">right join</option>' +
+            '<option value="inner">inner join</option>' +
+            '<option value="outer">outer join</option>' +
+            '</select>' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group right-button">' +
+            '<a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>' +
+            '</div>' +
+            '</div>';
+
+    var group_by_tpl='<div class="clearfix"></div>' +
+            '<div class="form-group param-item">' +
+            '<div class="form-group left-label"><label>Group:</label></div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group pull-left" style="width: 64%;">' +
+            '<input type="text" name="group_column" class="form-control" placeholder="group-column" />' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group pull-left" style="width: 18%;">' +
+            '<label class="radio-inline">' +
+            '<input type="radio" name="count_type" checked="checked" value="count" />count' +
+            '</label>' +
+            '<label class="radio-inline">' +
+            '<input type="radio" name="count_type" value="distinct" />distinct' +
+            '</label>' +
+            '</div>' +
+            '<div class="param_black_div"></div>' +
+            '<div class="form-group right-button">' +
+            '<a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>' +
+            '</div>' +
+            '</div>';
+
+    $(function () {
+        sql_init();
+        $(".highlightTextarea").css("width", "100%");
+        $(document).on('input propertychange focus', '#sql-textarea', function() {
+            //$(this).highlightTextarea('setWords', ['select','table']);
+            sql_init();
+        });
+        // 添加 schema
+        $("#add-schema").click(function () {
+            $("#add-schema-div").append(schema_tpl);
+            sql_init();
+            $(".highlightTextarea").css("width", "100%");
+            console.log("hello wolrd!");
+        });
+
+        // 添加 join
+        $("#join-param").click(function () {
+            $("#join-param-div").append(join_tpl);
+            console.log("hello wolrd!");
+        });
+
+        // 添加 condition 参数
+        $(".simple-condition").click(function () {
+            var type = $(this).data("type");
+            var tpl = "";
+            switch ( type ){
+                case 'order':
+                    if( !check_exist("condition", "order") ){
+                        tpl = condition_tpl( "Order", "order", "id desc, name asc" );
+                    }
+                    break;
+                case 'limit':
+                    if( !check_exist("condition", "limit") ){
+                        tpl = condition_tpl( "Limit", "limit", "50" );
+                    }
+                    break;
+                default:
+                    if( !check_exist("condition", "where") ){
+                        tpl = condition_tpl( "Where", "where", "id > 100" );
+                    }
+                    break;
+            }
+            $("#condition").append(tpl);
+        });
+        $("#group-by-condition").click(function () {
+            if( !check_exist("condition", "group_column") ){
+                $("#condition").append(group_by_tpl);
+            }
+        });
+        // 删除参数
+        $(document).on('click', '.param-rm', function(){
+            $(this).parents('.param-item').remove();
+        });
+        
+        $("#sql-run").click(function () {
+            var data = {};
+            var schema_list = [];
+            $(".schema-form").each(function () {
+                var schema = {};
+                schema.host = $(this).find("input[name='host']").val();
+                schema.username = $(this).find("input[name='username']").val();
+                schema.sql = $(this).find(".sql-textarea").val();
+                schema_list.push(schema);
+            });
+            var join_list = [];
+            $(".join-form").each(function () {
+                var join = {};
+                join.left = $(this).find("input[name='left_column']").val();
+                join.right = $(this).find("input[name='right_column']").val();
+                join.type = $(this).find("select.join").val();
+                join_list.push(join);
+            });
+            var where = $("input[name='where']").val();
+            var group = {}
+            group.group_column = $("input[name='group_column']").val();
+            group.count_type = $("input[name='count_type']:checked").val();
+            var order = $("input[name='order']").val();
+            var limit = $("input[name='limit']").val();
+
+            data.schema = schema_list;
+            data.join = join_list;
+            data.group = group;
+            data.where = where;
+            data.order = order;
+            data.limit = limit;
+
+            console.log( JSON.stringify(data) );
+
+        });
+    });
+
+    // sql 高亮插件 textarea 初始化
+    function sql_init() {
+        $(".sql-textarea").highlightTextarea({
+            words: [{
+                color: '#ADF0FF',
+                words: 'select'
+            }, {
+                color: '#FFFF00',
+                words: 'table'
+            }, {
+                words: 'limit'
+            }]
+        });
+    }
+
+    // 通过 input name 检查控件是否存在
+    function check_exist(parent_id, name) {
+        var obj = $('#' + parent_id ).find("input[name='" + name + "']");
+        if( obj.length > 0 ){
+            return true;
+        }
+        return false;
+    }
+
+    // 简单的条件参数模版
+    function condition_tpl(type, name, content) {
+        var tpl='<div class="clearfix"></div>' +
+                '<div class="form-group param-item">'+
+                '<div class="form-group left-label"><label>' + type + ':</label></div>'+
+                '<div class="param_black_div"></div>'+
+                '<div class="sql_param_key_div form-group" style="width:84%">'+
+                '<input type="text" name="' + name + '" class="form-control" placeholder="' + content + '">'+
+                '</div>'+
+                '<div class="param_black_div"></div>'+
+                '<div class="form-group right-button">'+
+                '<a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>'+
+                '</div>'+
+                '</div>';
+        return tpl;
+    }
+    /*]]>*/
+</script>
+</body>
+</html>

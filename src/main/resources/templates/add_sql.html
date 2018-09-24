@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.springframework.org/schema/jdbc">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Title</title>
+    <link href="../../vender/jquery-highlighttextarea/jquery.highlighttextarea.css" rel="stylesheet" />
+    <link href="../../vender/bootstrap-3.3.7-dist/css/bootstrap.min.css" rel="stylesheet" charset="utf-8" />
+    <link href="../../css/common.css" rel="stylesheet" charset="utf-8" />
+</head>
+<style>
+    .sql_param_key_div{
+        width:20%;
+        float:left;
+    }
+    .param_black_div{
+        width:2%;
+        height: 2px;
+        float: left;
+    }
+    .sql_param_value_div{
+        width:68%;
+        float:left;
+    }
+    .right-button{
+        width: 8%;
+        float: left;
+    }
+    a.btn-xs{
+        margin-top:5px;
+        border-radius: 50px;
+    }
+
+    #ping-jdbc{
+        width: 40px;
+    }
+    .sql-button{
+        margin-right: 15px;
+        width: 70px;
+    }
+
+    pre {padding: 5px; margin: 5px; }
+    .string { color: green; }
+    .number { color: darkorange; }
+    .boolean { color: blue; }
+    .null { color: magenta; }
+    .key { color: red; }
+
+</style>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <!-- We use the fluid option here to avoid overriding the fixed width of a normal container within the narrow content columns. -->
+    <div class="container-fluid">
+        <div class="container">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="/index"><span class="glyphicon glyphicon-home"></span> Home</a>
+            </div>
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+                <ul class="nav navbar-nav">
+                    <li class="active"><a href="/sql/addSql">add sql</a></li>
+                    <li><a href="/list">list</a></li>
+                    <li><a href="/statistics">statistics</a></li>
+                    <li><a href="/history">history</a></li>
+                </ul>
+            </div><!-- /.navbar-collapse -->
+        </div>
+    </div>
+</nav>
+<div class="clearfix nav-height"></div>
+<div class="container-fluid container-title">
+    <div class="container container-title-content">
+        <h1>Add sql</h1>
+        <p>将 sql 调用转换成 restful 接口的调用，这样方便分析统计 sql 的执行效率，简化service的开发。</p>
+    </div>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">add sql</h3>
+            </div>
+            <div class="panel-body">
+                <div class="form-group">
+                    <label>jdbc 地址</label>
+                    <div class="form-group">
+                        <div class="form-group" style="width: 40%; float: left">
+                            <input type="text" name="host" class="form-control" placeholder="host" maxlength="100" />
+                            <ul class="typeahead dropdown-menu all-service" role="listbox" style="top: 278px; left: 119.5px;display:none">
+                                <li class="dropdown-li" th:each="item : ${hosts}"><a class="dropdown-item" th:text="${item}"></a></li>
+                            </ul>
+                        </div>
+                        <div class="param_black_div"></div>
+                        <div class="form-group" style="width: 23%; float: left">
+                            <input type="text" name="username" class="form-control" maxlength="30" placeholder="username" />
+                        </div>
+                        <div class="param_black_div"></div>
+                        <div class="form-group" style="width: 23%; float: left">
+                            <input type="text" name="password" class="form-control" maxlength="30" placeholder="password" />
+                        </div>
+                        <div class="param_black_div"></div>
+                        <div class="form-group right-button">
+                            <a class="btn btn-default btn-xs" href="#" id="ping-jdbc">ping</a>
+                        </div>
+                    </div>
+                </div><!-- .form-group -->
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <label>sql</label>
+                    <textarea id="sql-textarea" maxlength="1000" class="form-control input-width" style="background: none;font-size:18px;height:100px">select * from table user limit 1</textarea>
+                    <span>您已输入</span><span id="sql_input_num">0</span>/1000字
+                </div><!-- .form-group -->
+                <div class="form-group" id="add_param">
+                    <label>添加参数</label>
+                </div><!-- #add_param -->
+                <div class="clearfix"></div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-default btn-xs" id="sql-param"> + sql param </button>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-default sql-button" id="run-sql"> run </button>
+                    <button type="submit" class="btn btn-primary sql-button" id="sql-confirm"> add </button>
+                </div>
+            </div>
+        </div><!-- .panel -->
+    </div><!-- .row -->
+    <div class="row">
+        <blockquote>
+            <p id="true-sql"></p>
+        </blockquote>
+        <table class="table table-bordered" id="sql-result">
+            <thead></thead>
+            <tbody></tbody>
+        </table>
+    </div><!-- .row -->
+</div><!-- .container -->
+
+<!-- Modal -->
+<div class="modal fade" id="para_list_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                确认提交？
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">no</button>
+                <button type="button" class="btn btn-primary" id="sql-add">yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="add_result_modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <h5>您的接口请求参数如下：</h5>
+                <pre id="add_result_content"></pre>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="../../vender/jQuery/jquery-2.2.3.min.js"></script>
+<script src="../../vender/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+<script src="../../vender/jquery-highlighttextarea/jquery.highlighttextarea.js"></script>
+<script src="../vender/bootstrap3-typeahead.js"></script>
+<script src="../../js/common.js"></script>
+<script th:inline="JavaScript">
+    /*<![CDATA[*/
+    var sql_param_tpl= get_sql_param_tpl();
+
+    $(function () {
+        form_init();
+        sql_init();
+        $(".highlightTextarea").css("width", "90%");
+        $(document).on('input propertychange focus', '#sql-textarea', function() {
+            //$(this).highlightTextarea('setWords', ['select','table']);
+            sql_init();
+        });
+        // 添加 json 类型参数
+        $("#sql-param").click(function () {
+            $("#add_param").append(sql_param_tpl);
+            console.log("hello wolrd!");
+        });
+        // 删除参数
+        $(document).on('click', '.param-rm', function(){
+            $(this).parents('.param-item').remove();
+        });
+
+        $("#sql-confirm").click(function () {
+            $('#para_list_modal').modal('show');
+        });
+
+        $("#sql-add").click(function () {
+            var data = get_request_data();
+            console.log( data );
+            $.ajax({
+                url:'/sql/add_sql_ajax',
+                type:'POST',
+                contentType: 'application/json',
+                async:true,
+                data:data,
+                timeout:5000,
+                dataType:'json',
+                success:function(data){
+                    console.log( data );
+                    $('#para_list_modal').modal('hide');
+                    $("#add_result_modal").modal('show');
+
+                    var form_data = get_cookie("form_data");
+                    form_data = JSON.parse(form_data);
+                    var req = {};
+                    req.id = data.id;
+                    req.param = form_data.param_list;
+                    $("#add_result_content").html(syntaxHighlight(req));
+                }
+            });
+
+        });
+
+        $("#run-sql").click(function () {
+            var data = get_request_data();
+            console.log( data );
+            $.ajax({
+                url:'/sql/run_by_client',
+                type:'POST',
+                contentType: 'application/json',
+                async:true,
+                data:data,
+                timeout:5000,
+                dataType:'json',
+                success:function(data){
+                    console.log( data );
+                    $("#sql-result > thead").empty();
+                    $("#sql-result > tbody").empty();
+                    // 判断 sql
+                    var sql = data["sql"];
+                    $("#true-sql").text( sql );
+                    // 判断 result 的合法性
+                    if( typeof data["result"] == "undefine" || data["result"] == null || data["result"].length <= 0){
+                        return;
+                    }
+                    var result = data["result"];
+                    var size = result.length;
+                    for(var i=0; i< size; i++){
+                        var item = result[i];
+                        var head = "<tr>";
+                        var row = "<tr>";
+                        for (var key in item){
+                            head += "<th>" + key + "</th>";
+                            row += "<td>" + item[key] + "</td>";
+                        }
+                        head += "</tr>";
+                        row += "</tr>";
+                        if( i == 0 ){
+                            $("#sql-result > thead").append( head );
+                        }
+                        $("#sql-result > tbody").append( row );
+                    }
+                }
+            });
+
+        });
+
+        $("#ping-jdbc").click(function () {
+            var data = {};
+            data = JSON.stringify(data);
+            $.ajax({
+                url:'/sql/test_jdbc_ajax',
+                type:'POST',
+                contentType: 'application/json',
+                async:true,
+                data:data,
+                timeout:5000,
+                dataType:'json',
+                success:function(data){
+                    var result = data.result;
+                    if( result.error_code == 0 ){
+                        $("#ping-jdbc").removeClass("btn-danger");
+                        $("#ping-jdbc").addClass("btn-success");
+                        $("#ping-jdbc").text("ok!!");
+                    }else{
+                        $("#ping-jdbc").removeClass("btn-success");
+                        $("#ping-jdbc").addClass("btn-danger");
+                        $("#ping-jdbc").text("fail");
+                    }
+                }
+            });
+        });
+
+        $("input[name='host'],input[name='username'],input[name='password']").bind('input propertychange', function() {
+            $("#ping-jdbc").removeClass("btn-danger");
+            $("#ping-jdbc").removeClass("btn-success");
+            $("#ping-jdbc").text("ping");
+        });
+
+        /* ------------ hosts  的自动提示功能－－－－－－－－*/
+        var hosts = /*[[${hosts}]]*/;
+        $("input[name='host']").typeahead({
+            source: hosts
+        });
+        $("input[name='host']").bind('input focus propertychange',function () {
+            var this_val = $(this).val();
+            if( this_val == "" ||  this_val == " "){
+                $(".all-service").css("display", "block");
+            }else{
+                $(".all-service").css("display", "none");
+            }
+        });
+        // 添加完成后就可以绑定事件
+        $(".dropdown-li").bind('click',function () {
+            var text_value = $(this).text().trim();
+            $("input[name='host']").val(text_value);
+            $(".all-service").css("display", "none");
+        });
+        // 鼠标离开要隐藏掉
+        $("input[name='host']").blur(function (e) {
+            setTimeout(function () { //因为点击事件和鼠标离开事件绑定在同一个对象，所有要延迟一下
+                console.log("aa");
+                $(".all-service").css("display", "none");
+            }, 500);
+        });
+    });
+
+    function get_request_data() {
+        var data = {};
+        var param_list = [];
+        $(".json-param").each(function () {
+            var param = {};
+            param.field = $(this).find("input[name='field']").val();
+            param.value = $(this).find("input[name='field-value']").val();
+            param_list.push(param);
+        });
+        data.param_list = param_list;
+        data.host = $("input[name='host']").val();
+        data.username = $("input[name='username']").val();
+        data.password = $("input[name='password']").val();
+        data.sql = $("#sql-textarea").val();
+        data = JSON.stringify(data);
+        set_cookie("form_data", data);
+        return data;
+    }
+
+    function sql_init() {
+        $("#sql-textarea").highlightTextarea({
+            words: [{
+                color: '#ADF0FF',
+                words: 'select'
+            }, {
+                color: '#ADF0FF',
+                words: 'where'
+            }, {
+                color: '#FFFF00',
+                words: '{'
+            }, {
+                color: '#FFFF00',
+                words: '$'
+            }, {
+                color: '#FFFF00',
+                words: '}'
+            }, {
+                words: 'limit'
+            }]
+        });
+
+        var content = $("#sql-textarea").val();
+        var count = content.length;
+        $("#sql_input_num").text(count);
+    }
+
+    function form_init() {
+        var data = get_cookie("form_data");
+        var form_data = JSON.parse(data);
+        if( typeof form_data == "undefine" || form_data == null ){
+            return
+        }
+        $("input[name='host']").val( form_data.host );
+        $("input[name='username']").val( form_data.username );
+        $("input[name='password']").val( form_data.password );
+        $("#sql-textarea").val( form_data.sql );
+
+        var params = form_data.param_list;
+        var param_size = params.length;
+        for(var i = 0; i < param_size; i++){
+            $("#add_param").append( get_sql_param_tpl(params[i]['field'],params[i]['value']) );
+        }
+
+    }
+
+    function get_sql_param_tpl(key, value) {
+        if(!key){
+            key='';
+        }
+        if(!value){
+            value="";
+        }
+        var tpl = '<div class="form-group param-item json-param">'+
+                '<div class="sql_param_key_div form-group">'+
+                '<input type="text" name="field" maxlength="30" class="form-control sql_param_key" value="' + key + '" placeholder="key">'+
+                '</div>'+
+                '<div class="param_black_div"></div>'+
+                '<div class="form-group sql_param_value_div">'+
+                '<input type="text" name="field-value" maxlength="30" class="form-control sql_param_value" value="' + value + '" placeholder="value">'+
+                '</div>'+
+                '<div class="param_black_div"></div>'+
+                '<div class="form-group right-button">'+
+                '<a class="btn btn-default btn-xs glyphicon glyphicon-remove param-rm" href="#"></a>'+
+                '</div>'+
+                '</div>';
+        return tpl;
+    }
+
+    function syntaxHighlight(json) {
+        if (typeof json != 'string') {
+            json = JSON.stringify(json, undefined, 2);
+        }
+        json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function(match) {
+            var cls = 'number';
+            if (/^"/.test(match)) {
+                if (/:$/.test(match)) {
+                    cls = 'key';
+                } else {
+                    cls = 'string';
+                }
+            } else if (/true|false/.test(match)) {
+                cls = 'boolean';
+            } else if (/null/.test(match)) {
+                cls = 'null';
+            }
+            return '<span class="' + cls + '">' + match + '</span>';
+        });
+    }
+    /*]]>*/
+</script>
+</body>
+</html>
